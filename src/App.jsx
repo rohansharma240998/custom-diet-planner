@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
 const API_URL = "https://api.anthropic.com/v1/messages";
+const API_KEY = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_ANTHROPIC_API_KEY : undefined;
 
 const QUOTES = [
   "YOUR BODY CAN DO IT. IT'S YOUR MIND YOU NEED TO CONVINCE.",
@@ -300,6 +301,11 @@ function PlanView({ form, plan, onRestart, onRegenerate }) {
     ];
     try {
       const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": API_KEY,
+            "anthropic-version": "2023-06-01"
+          },
         body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 4000,
           system: "You are a certified nutritionist. When users request changes, return the COMPLETE updated 7-day meal plan with changes applied. Keep same format: DAY headers, meal labels, calories, macros, power tips. Be encouraging.",
           messages }) });
@@ -421,7 +427,7 @@ export default function App() {
     const hCm = form.heightUnit==="in"?(parseFloat(form.height)*2.54).toFixed(1):form.height;
     const prompt = `You are a certified nutritionist and fitness coach. Create a detailed personalized 7-day diet plan.\n\nPROFILE:\nName: ${form.name} | Age: ${form.age} | Gender: ${form.gender}\nHeight: ${hCm}cm | Weight: ${wKg}kg\nGoal: ${form.goal} | Activity: ${form.activityLevel}\nMeals/day: ${form.mealsPerDay}\n\nDIETARY:\nDiet type: ${form.dietType.join(", ")||"None"}\nAllergies: ${form.allergies||"None"}\nDislikes: ${form.dislikedFoods||"None"}\nCuisines: ${form.cuisines||"Any"}\n\nFOOD ACCESS:\nDaily access: ${form.availableFoods||"Not specified"}\nAffordable: ${form.affordableFoods||"Not specified"}\nExclude: ${form.excludeFoods||"None"}\n\nSUPPLEMENTS:\nUsing: ${form.useSupplements}\n${form.useSupplements==="yes"?`Supplements: ${[...form.supplements,form.customSupplement].filter(Boolean).join(", ")}\n`:""}\nHEALTH:\nConditions: ${form.healthConditions||"None"}\nWater: ${form.waterIntake||"Not specified"}\n\nCreate a structured 7-day meal plan with BREAKFAST, LUNCH, DINNER, SNACK(S), calories, daily macros (Protein/Carbs/Fats), total daily calories, power tip per day, and motivating intro. ${form.useSupplements==="yes"?"Include supplement timing.":""} Prioritize their available and affordable foods.`;
     try {
-      const res = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"application/json"},
+      const res = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"application/json", "x-api-key": API_KEY, "anthropic-version": "2023-06-01"},
         body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:4000, messages:[{role:"user",content:prompt}] }) });
       const data = await res.json();
       setPlan(data.content?.find(b=>b.type==="text")?.text||"");
