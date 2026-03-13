@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const API_URL = "https://api.anthropic.com/v1/messages";
+const API_URL = "/api/chat";
 const API_KEY = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_ANTHROPIC_API_KEY : undefined;
 
 const QUOTES = [
